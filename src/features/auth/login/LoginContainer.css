@@ -1,0 +1,25 @@
+.login-container {
+  max-width: 500px;
+  margin: 100px auto 100px auto;
+}
+
+.login-form {
+  margin-top: 25vh;
+  width: 100%;
+  max-width: 500px;
+}
+
+.login-oauth-container {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  max-width: 500px;
+  margin-top: 30px;
+  text-align: center;
+}
+
+.login-oauth-container__item {
+  cursor: pointer;
+  padding: 0 10px;
+  font-size: 40px;
+}

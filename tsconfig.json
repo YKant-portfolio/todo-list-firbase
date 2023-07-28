@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "strict": true,
+    "esModuleInterop": true,
+    "jsx": "react",
+    "lib": ["dom.iterable", "es2021", "dom"],
+    "baseUrl": "src",
+    "paths": {
+      "@Components/*": ["Components/*"],
+      "@features/*": ["features/*"]
+    }
+  },
+  "include": ["src"],
+  "exclude": ["node_modules", "dist"]
+}
