@@ -1,4 +1,4 @@
-# Todo list
+>># Todo list
 
 ## Привет!
 
@@ -16,18 +16,20 @@
 
 ## Технологический стек
 
+<img src="https://img.shields.io/badge/Webpack-464a51?style=for-the-badge&logo=webpack&logoColor=8DD6F9"/>
+
 ### Фронтенд
 
 - Webpack
-- React ^18.2.0
-- React Router DOM ^6.14.1
-- TypeScript ^5.1.6
-- MUI Material-UI ^5.14.0
-- Emotion ^11.11.1
+- React 18
+- React Router DOM 6
+- TypeScript 5
+- MUI Material-UI 5
+- Emotion 11
 
 ### Бэкенд
 
-- Firebase ^10.0.0
+- Firebase 10
 
 ## Установка и запуск
 
