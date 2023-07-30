@@ -17,6 +17,7 @@
 ## Технологический стек
 
 <img src="https://img.shields.io/badge/Webpack-464a51?style=for-the-badge&logo=webpack&logoColor=8DD6F9"/>
+<img src="https://img.shields.io/badge/react?style=for-the-badge&logo=react&logoColor=8DD6F9"/>
 
 ### Фронтенд
 
