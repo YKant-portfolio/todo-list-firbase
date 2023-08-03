@@ -1,24 +1,51 @@
-import React, { FC } from 'react';
+import React, { FC, ReactNode, createContext, useState, useContext } from 'react';
 import Snackbar from '@mui/material/Snackbar';
-import MuiAlert from '@mui/material/Alert';
 
-interface SnackbarMessageProps {
-  open: boolean;
+interface SnackbarContextType {
   message: string;
-  onClose: () => void;
+  isOpen: boolean;
+  showSnackbar: (message: string) => void;
 }
 
-export const SnackbarMessage: FC<SnackbarMessageProps> = ({ open, message, onClose }) => {
+const initialSnackbarState: SnackbarContextType = {
+  message: '',
+  isOpen: false,
+  showSnackbar: () => 'happy',
+};
+
+const SnackbarContext = createContext<SnackbarContextType>(initialSnackbarState);
+
+export const useSnackbar = (): SnackbarContextType => useContext(SnackbarContext);
+
+export const SnackbarProvider: FC<{ children: ReactNode }> = ({ children }) => {
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
+  const [snackbarMessage, setSnackbarMessage] = useState('');
+
+  const showSnackbar = (message: string) => {
+    setSnackbarMessage(message);
+    setSnackbarOpen(true);
+  };
+
+  const handleCloseSnackbar = () => {
+    setSnackbarOpen(false);
+  };
+
   return (
-    <Snackbar
-      open={open}
-      autoHideDuration={6000}
-      onClose={onClose}
-      anchorOrigin={{ vertical: 'top', horizontal: 'left' }}
+    <SnackbarContext.Provider
+      value={{
+        message: snackbarMessage,
+        isOpen: snackbarOpen,
+        showSnackbar,
+      }}
     >
-      <MuiAlert onClose={onClose} severity="success" elevation={6} variant="filled">
-        {message}
-      </MuiAlert>
-    </Snackbar>
+      {children}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={3000}
+        onClose={handleCloseSnackbar}
+        message={snackbarMessage}
+        anchorOrigin={{ vertical: 'top', horizontal: 'center' }}
+      />
+    </SnackbarContext.Provider>
   );
 };

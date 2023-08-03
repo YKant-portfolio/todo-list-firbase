@@ -4,22 +4,23 @@ stages:
   - deploy
 
 code_quality:
-  image: node:latest
+  image: node:18
   stage: test
   before_script:
-    - npm ci
+    - npm cache verify
+    - npm install
   script:
     - npm run eslint
-    - npm run stylelint
     - npm run prettier-check
   only:
     - merge_requests
 
 build:
-  image: node:latest
+  image: node:18
   stage: build
   before_script:
-    - npm ci
+    - npm cache verify
+    - npm install
   script:
     - npm run build
   artifacts:

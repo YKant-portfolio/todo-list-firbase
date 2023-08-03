@@ -1,3 +1,4 @@
+import { useSnackbar } from '@features/todo/SnackbarMessage';
 import { FirebaseApp } from 'firebase/app';
 import {
   ProviderId,
@@ -41,6 +42,8 @@ export const AuthContextProvider: FC<TProps> = ({ firebaseApp, children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [auth] = useState(getAuth(firebaseApp));
 
+  const { showSnackbar } = useSnackbar();
+
   const processLogin = async (promise: Promise<UserCredential>): Promise<UserCredential> => {
     setIsAuthenticate(null);
     setUser(null);
@@ -49,8 +52,7 @@ export const AuthContextProvider: FC<TProps> = ({ firebaseApp, children }) => {
       const result = await promise;
       return result;
     } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('Ошибка при входе в систему:', error);
+      showSnackbar('Ошибка при входе в систему:');
       throw error;
     }
   };

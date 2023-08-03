@@ -1,4 +1,4 @@
-import React, { FC, Reducer, useReducer, useState } from 'react';
+import React, { FC, Reducer, useReducer } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ALLOWED_OAUTH_PROVIDERS, useAuth } from '../AuthContextProvider';
 import { validateEmail } from './utils';
@@ -11,6 +11,7 @@ import GoogleIcon from '@mui/icons-material/Google';
 import GitHubIcon from '@mui/icons-material/GitHub';
 import LoginIcon from '@mui/icons-material/Login';
 import Button from '@mui/material/Button';
+import { useSnackbar } from '@features/todo/SnackbarMessage';
 
 type TLoginFieldState = Omit<TLoginField, 'onChange'>;
 
@@ -57,8 +58,6 @@ interface Props {
 export const LoginContainer: FC<Props> = ({ type = 'authorization' }) => {
   const navigate = useNavigate();
   const { loginWithEmailAndPassword, loginWithPopup, signUpUserWithEmailAndPassword } = useAuth();
-  const [authError, setAuthError] = useState('');
-  const [userExists, setUserExists] = useState(false);
   const [emailState, dispatchEmail] = useReducer<Reducer<TLoginFieldState, TAction>>(reducer, {
     name: 'email',
     value: '',
@@ -68,15 +67,17 @@ export const LoginContainer: FC<Props> = ({ type = 'authorization' }) => {
     value: '',
   });
 
+  const { showSnackbar } = useSnackbar();
+
   const processLogin = async (promise: Promise<UserCredential>): Promise<void> => {
     try {
       await promise;
       return navigate('/');
     } catch (error: any) {
       if (error.code === 'auth/email-already-in-use') {
-        return setUserExists(true);
+        return showSnackbar('Пользователь с таким email уже существует.');
       }
-      return setAuthError((error as Error).message);
+      return showSnackbar('Пользователь с такими учетными данными не найден');
     }
   };
 
@@ -117,16 +118,6 @@ export const LoginContainer: FC<Props> = ({ type = 'authorization' }) => {
       <Typography variant="h4" color="gray" sx={{ textAlign: 'center', mb: 2 }}>
         {type === 'authorization' ? 'Авторизация' : 'Регистрация'}
       </Typography>
-      {authError && (
-        <Typography variant="subtitle2" color="error" sx={{ m: 2 }}>
-          {authError}
-        </Typography>
-      )}
-      {userExists && (
-        <Typography variant="subtitle2" color="error" sx={{ m: 2 }}>
-          Пользователь с таким email уже существует.
-        </Typography>
-      )}
       <LoginForm
         email={{ ...emailState, onChange: (e) => dispatchEmail({ type: 'change', value: e.target.value }) }}
         password={{ ...passwordState, onChange: (e) => dispatchPassword({ type: 'change', value: e.target.value }) }}

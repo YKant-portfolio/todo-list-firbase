@@ -1,7 +1,9 @@
-import React, { FC, useState } from 'react';
+import React, { FC, useEffect, useState } from 'react';
 import { ITodo } from 'types';
 import { useTodo } from '@features/todo/TodoContextProvider';
-import { SnackbarMessage } from '@features/todo/SnackbarMessage';
+import { useSnackbar } from '@features/todo/SnackbarMessage';
+import { format } from 'date-fns';
+import { ru } from 'date-fns/locale';
 
 import Paper from '@mui/material/Paper';
 import Box from '@mui/material/Box';
@@ -11,24 +13,49 @@ import EditIcon from '@mui/icons-material/Edit';
 import DeleteForeverIcon from '@mui/icons-material/DeleteForever';
 import Checkbox from '@mui/material/Checkbox';
 import TextField from '@mui/material/TextField';
+import { Timestamp } from 'firebase/firestore';
 
-export const TodoItem: FC<ITodo> = ({ description, id }) => {
+export const TodoItem: FC<ITodo> = ({ description, id, createdAt, updatedAt }) => {
   const [isEdit, setIsEdit] = useState(false);
   const [isChecked, setIsChecked] = useState(false);
   const [taskDescription, setTaskDescription] = useState(description);
   const { deleteTodo, updateTodo } = useTodo();
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const { showSnackbar } = useSnackbar();
+  const [createdDate, setCreatedDate] = useState('');
+  const [updatedDate, setUpdatedDate] = useState('');
+
+  const formatDate = (timestamp: Timestamp) => {
+    if (timestamp && timestamp.seconds) {
+      const milliseconds = timestamp.seconds * 1000;
+      const date = new Date(milliseconds);
+      return format(date, 'HH:mm dd MMMM yyyy', { locale: ru });
+    }
+    return null;
+  };
+
+  useEffect(() => {
+    const updatedFormattedDate = formatDate(updatedAt);
+    if (updatedFormattedDate) {
+      setUpdatedDate(updatedFormattedDate);
+    }
+  }, [updatedAt]);
+
+  useEffect(() => {
+    if (createdAt) {
+      const createdFormattedDate = formatDate(createdAt);
+      if (createdFormattedDate) {
+        setCreatedDate(createdFormattedDate);
+      }
+    }
+  }, [createdAt]);
 
   const onSaveEdit = async () => {
     if (taskDescription !== description) {
       try {
         await updateTodo(id, { description: taskDescription });
-        setSnackbarMessage('Задача успешно обновлена');
-        setSnackbarOpen(true);
+        showSnackbar('Задача успешно обновлена');
       } catch {
-        setSnackbarMessage('Ошибка при обновлении задачи:');
-        setSnackbarOpen(true);
+        showSnackbar('Ошибка при обновлении задачи:');
       } finally {
         setIsEdit(false);
       }
@@ -38,23 +65,19 @@ export const TodoItem: FC<ITodo> = ({ description, id }) => {
   };
 
   const onDeleteTodo = () => {
-    setSnackbarMessage('Задача успешно удалена');
-    setSnackbarOpen(true);
+    showSnackbar('Задача успешно удалена');
     setTimeout(() => {
-      setSnackbarOpen(false);
       deleteTodo(id);
-    }, 1000);
+    }, 0);
   };
 
   const completeTodo = () => {
     setIsChecked(true);
-    setSnackbarMessage('Задача успешно выполнена');
-    setSnackbarOpen(true);
-    setTimeout(() => deleteTodo(id), 2000);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+    showSnackbar('Задача успешно выполнена');
+    const timeoutId = setTimeout(() => {
+      deleteTodo(id);
+      clearTimeout(timeoutId);
+    }, 0);
   };
 
   return (
@@ -65,21 +88,37 @@ export const TodoItem: FC<ITodo> = ({ description, id }) => {
       {isEdit ? (
         <TextField value={taskDescription} onChange={(e) => setTaskDescription(e.target.value)} />
       ) : (
-        <Typography
-          variant="h4"
-          sx={{
-            color: 'gray',
-            marginRight: '10px',
-            fontSize: '22px',
-            display: 'flex',
-            justifyContent: 'center',
-            alignItems: 'center',
-            cursor: 'pointer',
-          }}
-          onClick={() => setIsEdit(true)}
-        >
-          {description}
-        </Typography>
+        <>
+          <Typography
+            variant="h4"
+            sx={{
+              color: 'gray',
+              marginRight: '10px',
+              fontSize: '22px',
+              display: 'flex',
+              justifyContent: 'center',
+              alignItems: 'center',
+              cursor: 'pointer',
+            }}
+            onClick={() => setIsEdit(true)}
+          >
+            {description}
+          </Typography>
+          <Typography
+            variant="h4"
+            sx={{
+              color: 'gray',
+              fontSize: '12px',
+              display: 'flex',
+              justifyContent: 'flex-end',
+              alignItems: 'center',
+              marginLeft: 'auto',
+              paddingRight: '20px',
+            }}
+          >
+            {updatedAt ? `обновлен в: ${updatedDate}` : `создан: ${createdDate}`}
+          </Typography>
+        </>
       )}
       <Box>
         <Checkbox edge="start" onChange={completeTodo} checked={isChecked} tabIndex={-1} />
@@ -101,7 +140,6 @@ export const TodoItem: FC<ITodo> = ({ description, id }) => {
             </IconButton>
           </>
         )}
-        <SnackbarMessage open={snackbarOpen} message={snackbarMessage} onClose={handleSnackbarClose} />
       </Box>
     </Paper>
   );

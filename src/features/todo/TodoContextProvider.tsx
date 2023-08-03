@@ -2,6 +2,7 @@ import { createTodoApi, deleteTodoApi, getTodosApi, updateTodoApi } from '../../
 import React, { createContext, FC, ReactNode, useContext, useEffect, useState } from 'react';
 import { ITodo } from 'types';
 import { useAuth } from '@features/auth/AuthContextProvider';
+import { useSnackbar } from './SnackbarMessage';
 
 interface ITodoContext {
   todos: ITodo[];
@@ -26,6 +27,8 @@ export const TodoContextProvider: FC<{ children: ReactNode }> = ({ children }) =
   const [isLoading, setIsLoading] = useState<boolean>(false);
   const { user } = useAuth();
 
+  const { showSnackbar } = useSnackbar();
+
   useEffect(() => {
     setTodo([]);
     if (user) {
@@ -37,27 +40,25 @@ export const TodoContextProvider: FC<{ children: ReactNode }> = ({ children }) =
   }, [user]);
 
   // Вспомогательная функция для единообразной обработки обновления, удаления и создания задач
-  const updateTodoList = async (promise: Promise<void>): Promise<void> => {
-    try {
-      await promise;
-      const updatedTodos = await getTodosApi();
-      setTodo(updatedTodos);
-    } catch (error) {
-      // eslint-disable-next-line no-console
-      console.error('ошибка сети или некорректный ответ от сервера', error);
-    }
+  const updateTodoList = (): void => {
+    getTodosApi()
+      .then(setTodo)
+      .catch((error) => {
+        showSnackbar('ошибка сети или некорректный ответ от сервера');
+        throw error;
+      });
   };
 
   const createTodo = (data: Omit<ITodo, 'id'>) => {
-    return updateTodoList(createTodoApi(data));
+    return createTodoApi(data).then(updateTodoList);
   };
 
   const deleteTodo = (id: string) => {
-    return updateTodoList(deleteTodoApi(id));
+    return deleteTodoApi(id).then(updateTodoList);
   };
 
   const updateTodo = (id: string, data: Omit<ITodo, 'id'>) => {
-    return updateTodoList(updateTodoApi(id, data));
+    return updateTodoApi(id, data).then(updateTodoList);
   };
 
   const todoContextValue: ITodoContext = {

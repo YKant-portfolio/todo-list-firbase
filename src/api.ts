@@ -1,7 +1,8 @@
 import { FirebaseApp, initializeApp } from 'firebase/app';
 import { getAuth } from 'firebase/auth';
-import { getFirestore, addDoc, deleteDoc, doc, updateDoc } from 'firebase/firestore';
+import { getFirestore, addDoc, deleteDoc, doc, updateDoc, orderBy } from 'firebase/firestore';
 import { collection, getDocs, query, where } from 'firebase/firestore';
+import { serverTimestamp } from 'firebase/firestore';
 import { ITodo } from 'types';
 
 export const initializeAPI = (): FirebaseApp => {
@@ -26,7 +27,7 @@ export const getTodosApi = async (): Promise<ITodo[]> => {
   const auth = getAuth();
   const todos: ITodo[] = [];
   const ref = collection(db, 'todo');
-  const q = query(ref, where('userId', '==', auth.currentUser?.uid));
+  const q = query(ref, where('userId', '==', auth.currentUser?.uid), orderBy('createdAt'));
   try {
     const querySnapshot = await getDocs(q);
     querySnapshot.forEach((doc) => {
@@ -52,7 +53,7 @@ export const createTodoApi = async (data: Omit<ITodo, 'id'>): Promise<any> => {
   const db = getFirestore();
   const auth = getAuth();
   try {
-    await addDoc(collection(db, 'todo'), { ...data, userId: auth.currentUser?.uid });
+    await addDoc(collection(db, 'todo'), { ...data, userId: auth.currentUser?.uid, createdAt: serverTimestamp() });
   } catch (error) {
     return Promise.reject(error);
   }
@@ -62,7 +63,7 @@ export const updateTodoApi = async (id: string, data: Omit<ITodo, 'id'>): Promis
   const db = getFirestore();
 
   try {
-    await updateDoc(doc(db, 'todo', id), data);
+    await updateDoc(doc(db, 'todo', id), { ...data, updatedAt: serverTimestamp() });
   } catch (error) {
     return Promise.reject(error);
   }

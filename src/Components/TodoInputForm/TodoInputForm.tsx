@@ -4,14 +4,14 @@ import TextField from '@mui/material/TextField/TextField';
 import Box from '@mui/material/Box';
 import Button from '@mui/material/Button';
 import LibraryAddIcon from '@mui/icons-material/LibraryAdd';
-import { SnackbarMessage } from '@features/todo/SnackbarMessage';
+import { useSnackbar } from '@features/todo/SnackbarMessage';
 
 export const TodoInputForm: FC = () => {
   const [inputvalue, setInputValue] = useState('');
   const [inputError, setInputError] = useState('');
 
-  const [snackbarOpen, setSnackbarOpen] = useState(false);
-  const [snackbarMessage, setSnackbarMessage] = useState('');
+  const { showSnackbar } = useSnackbar();
+
   const { createTodo } = useTodo();
 
   const onSubmitForm = (event: FormEvent<HTMLFormElement>) => {
@@ -22,12 +22,7 @@ export const TodoInputForm: FC = () => {
     setInputValue('');
     setInputError('');
     onSubmit(inputvalue);
-    setSnackbarMessage('Задача успешно добавлена');
-    setSnackbarOpen(true);
-  };
-
-  const handleSnackbarClose = () => {
-    setSnackbarOpen(false);
+    showSnackbar('Задача успешно добавлена');
   };
 
   const onChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -89,7 +84,6 @@ export const TodoInputForm: FC = () => {
       >
         создать
       </Button>
-      <SnackbarMessage open={snackbarOpen} message={snackbarMessage} onClose={handleSnackbarClose} />
     </Box>
   );
 };

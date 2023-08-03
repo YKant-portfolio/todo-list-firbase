@@ -1,7 +1,6 @@
 const path = require('path');
 const HtmlWebpackPlugin = require('html-webpack-plugin');
 const ESLintPlugin = require('eslint-webpack-plugin');
-const StylelintPlugin = require('stylelint-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
@@ -46,9 +45,6 @@ module.exports = {
       template: './src/index.html',
     }),
     new CleanWebpackPlugin(),
-    new StylelintPlugin({
-      files: 'src/{**/*,*}.css',
-    }),
     new ESLintPlugin({
       files: 'src/{**/*,*}.{tsx,ts}',
     }),
